@@ -6,17 +6,21 @@ public class PMCharacter : MonoBehaviour
 {
     public int health;
     public int maxHealth = 7;
+    public int coins;
     int ballots;
     public float runSpeed = 20f;
     public int attackDamage = 10;
     float sphereColliderSize = 0.8f;
     public float attackStrength = 0.5f;
+    private float weaponCooldown = 1f;
+    private float currentWeaponCooldown;
     Animator animator;
     Camera cam;
     Animator weaponAnimator;
     GameObject playerSprite;
     GameObject weapon;
     Vector3 weaponColliderPos;
+    PlayerWeapon weapons;
     Rigidbody2D body;
     float horizontal;
     LayerMask objectLayer;
@@ -26,6 +30,9 @@ public class PMCharacter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        weapons = GetComponent<PlayerWeapon>();
+        weapons.init();
+        weapons.equiptWeapon(0);
         objectLayer = LayerMask.GetMask("Object");
         lr = gameObject.transform.GetChild(0).gameObject;
         body = GetComponent<Rigidbody2D>();
@@ -35,7 +42,9 @@ public class PMCharacter : MonoBehaviour
         weapon = gameObject.transform.GetChild(2).gameObject;
         weaponColliderPos = gameObject.transform.GetChild(2).GetChild(0).GetChild(0).gameObject.transform.position;
         cam = GameObject.Find("Camera").GetComponent<Camera>();
+        currentWeaponCooldown = Time.time + weaponCooldown;
         health = maxHealth;
+        
     }
 
     // Update is called once per frame
@@ -76,28 +85,23 @@ public class PMCharacter : MonoBehaviour
         }
     }
 
+    public void GetNearbyItems() {
+        Collider2D col2d = Physics2D.OverlapCircle(transform.position, 2);
+
+        if (col2d.gameObject.layer == LayerMask.NameToLayer("Items")) {
+            // Show Option to pickup item
+            if (Input.GetKeyDown(KeyCode.F)) {
+
+            }
+        }
+    }
+
     public int GetHealth() {
         return health;
     }
 
     private void Attack() {
-        weaponAnimator.SetTrigger("Attack");
-        Collider2D[] blockCollision = Physics2D.OverlapCircleAll(transform.position, sphereColliderSize, objectLayer);
-        if (blockCollision != null) {
-            foreach(Collider2D objCollider in blockCollision) {
-                if (objCollider.GetComponent<Obstical>().GetPhysics())
-                objCollider.gameObject.GetComponent<Rigidbody2D>().AddForce((objCollider.transform.position - transform.position).normalized * attackStrength);
-                objCollider.GetComponent<Obstical>().OnHit(attackDamage);
-            }
-        }
-
-        Collider2D[] enemyCollision = Physics2D.OverlapCircleAll(transform.position, sphereColliderSize, LayerMask.GetMask("Enemy"));
-        if (enemyCollision != null) {
-            foreach(Collider2D enemiesCol in enemyCollision) {
-                enemiesCol.gameObject.GetComponent<Rigidbody2D>().AddForce((enemiesCol.transform.position - transform.position).normalized * attackStrength);
-                enemiesCol.GetComponent<EnemyHealth>().OnHit(attackDamage);
-            }
-        }
+        weapons.OnAttack();
     }
     private void FixedUpdate() {
         body.velocity = new Vector2(horizontal * runSpeed, vertical * runSpeed);
@@ -106,5 +110,21 @@ public class PMCharacter : MonoBehaviour
         } else {
             lr.SetActive(false);
         }
+    }
+
+    public int GetBallots() {
+        return ballots;
+    }
+
+    public int GetCoins() {
+        return coins;
+    }
+
+    public void AddCoins(int numberToAdd) {
+        coins = coins + numberToAdd;
+    }
+
+    public void AddBallots(int numberToAdd) {
+        ballots = ballots + numberToAdd;
     }
 }

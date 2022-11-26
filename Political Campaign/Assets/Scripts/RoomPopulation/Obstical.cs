@@ -22,6 +22,9 @@ public class Obstical : MonoBehaviour
         if (health <= 0) {
             room.GetObjectsInRoom().Remove(this.gameObject);
             Destroy(this.gameObject);
+            if (this.GetComponent<ItemStorage>()) {
+                this.GetComponent<ItemStorage>().SpawnItems();
+            }
         }
     }
 

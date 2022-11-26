@@ -8,7 +8,6 @@ public class DungeonMapGenerator : MonoBehaviour
     public static List<Room> roomsOnMap = new List<Room>();
     public int ySize = 10;
     int[,] map;
-    
     public GameObject blockFloor;
     public GameObject blockWall;
     public GameObject blockWallOtherSide;
@@ -19,6 +18,8 @@ public class DungeonMapGenerator : MonoBehaviour
     public GameObject crate;
     public GameObject rock;
     public GameObject ratling1;
+    public GameObject ratking;
+    private Room ratkingRoom;
     private const int MAX_LEAFS = 6;
     private Room spawnRoom;
     private List<Leaf> leafs = new List<Leaf>();
@@ -50,31 +51,34 @@ public class DungeonMapGenerator : MonoBehaviour
         SetSpawnRoom();
         spawnRoom.GenerateSpawnRoom();
         Instantiate(spawnSurround, new Vector3(spawnRoom.GetCentre().x, spawnRoom.GetCentre().y, -.1f), Quaternion.identity);
+        GenerateRatKingRoom();
 
         List<Vector2> roomNodes = new List<Vector2>();
         foreach(Room room in roomsOnMap) {
             roomNodes.Add(room.GetCentre());
-            room.AddSpawnableObject(crate);
-            room.AddSpawnableObject(rock);
-            room.AddSpawnableObject(ratling1);
-            foreach(GameObject gobject in room.GetSpawnableObjects()) {
-                int amount = ((room.GetWidth() / 4) * (room.GetHeight() / 4));
-                for (int i = 0; i < amount; i++) {
-                    Vector2 spawnSpot = room.GetSpawnablePoints2()[Random.Range(0,room.GetSpawnablePoints2().Count)];
-                    room.GetSpawnablePoints2().Remove(spawnSpot);
-                    GameObject createdObject = Instantiate(gobject, new Vector3(spawnSpot.x, spawnSpot.y, -0.5f), Quaternion.identity);
-                    if (gobject.layer == LayerMask.NameToLayer("Enemy")) {
-                        room.AddEnemy(createdObject);
-                        createdObject.GetComponent<EnemyMovement>().init(this,map,room);
-                        createdObject.GetComponent<EnemyHealth>().init(room);
-                    } else {
-                        room.GetObjectsInRoom().Add(createdObject);
-                        createdObject.GetComponent<Obstical>().SetRoom(room);
+            if (room != ratkingRoom) {
+                room.AddSpawnableObject(crate);
+                room.AddSpawnableObject(rock);
+                room.AddSpawnableObject(ratling1);
+                foreach(GameObject gobject in room.GetSpawnableObjects()) {
+                    int amount = ((room.GetWidth() / 4) * (room.GetHeight() / 4));
+                    for (int i = 0; i < amount; i++) {
+                        if (room != spawnRoom) {
+                            Vector2 spawnSpot = room.GetSpawnablePoints2()[Random.Range(0,room.GetSpawnablePoints2().Count)];
+                            room.GetSpawnablePoints2().Remove(spawnSpot);
+                            GameObject createdObject = Instantiate(gobject, new Vector3(spawnSpot.x, spawnSpot.y, -0.5f), Quaternion.identity);
+                            if (gobject.layer == LayerMask.NameToLayer("Enemy")) {
+                                    room.AddEnemy(createdObject);
+                                    createdObject.GetComponent<EnemyMovement>().init(this,map,room);
+                                    createdObject.GetComponent<EnemyHealth>().init(room);
+                            } else {
+                                room.GetObjectsInRoom().Add(createdObject);
+                                createdObject.GetComponent<Obstical>().SetRoom(room);
+                            }
+                        }
                     }
-                    
                 }
             }
-            
         }
         
         nodeMap.triangulate(xSize, ySize, roomNodes, spawnRoom.GetCentre());
@@ -124,7 +128,13 @@ public class DungeonMapGenerator : MonoBehaviour
     }
 
     private void GenerateRatKingRoom() {
+        ratkingRoom = roomsOnMap[Random.Range(0,roomsOnMap.Count)];
+        while(ratkingRoom == spawnRoom) {
+            ratkingRoom = roomsOnMap[Random.Range(0,roomsOnMap.Count)];
+        }
+        ratkingRoom.GenerateSpawnRoom();
 
+        Instantiate(ratking, (Vector3) ratkingRoom.GetCentre() + new Vector3(0, 1, -2), Quaternion.identity);
     }
 
     private void ApplySides() {
@@ -201,7 +211,7 @@ public class DungeonMapGenerator : MonoBehaviour
             Gizmos.DrawLine(graphEdge.GetNode1().GetPosition(), graphEdge.GetNode2().GetPosition());
         }
         
-        /*foreach(DTriangle triangle in nodeMap.GetTriangles()) {
+        foreach(DTriangle triangle in nodeMap.GetTriangles()) {
             Vector3 p1 = new Vector3(triangle.getPoint1().x, triangle.getPoint1().y, 0);
             Vector3 p2 = new Vector3(triangle.getPoint2().x, triangle.getPoint2().y, 0);
             Vector3 p3 = new Vector3(triangle.getPoint3().x, triangle.getPoint3().y, 0);
@@ -211,6 +221,6 @@ public class DungeonMapGenerator : MonoBehaviour
             Gizmos.DrawLine(p1, p2);
             Gizmos.DrawLine(p2, p3);
             Gizmos.DrawLine(p3, p1);
-        }*/
+        }
     }
 }

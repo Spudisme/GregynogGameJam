@@ -387,6 +387,7 @@ MonoBehaviour:
   crate: {fileID: 5088159085828308135, guid: 2e862dc3c50ce64429f5e5aa012f60cf, type: 3}
   rock: {fileID: 1847648911026161773, guid: 15af061a66abdab4a9fb6b04cf7f1daf, type: 3}
   ratling1: {fileID: 1949002391578601160, guid: 4e02ba2109b4eee4a9a94d1d612c8bfc, type: 3}
+  ratking: {fileID: 7726232497267105249, guid: 2ef5f9c5b634b420db0910f44a57b2a3, type: 3}
 --- !u!1 &790786512
 GameObject:
   m_ObjectHideFlags: 0
